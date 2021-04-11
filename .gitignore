@@ -5,8 +5,9 @@ scrape_data/
 test_code/__pycache__/
 test_code/old_saved_models/
 test_code/cartoonized_images/
-test_code/saved_models/
-test_code/test_images/
+test_code/saved_models/*
+test_code/test_images/*.jpg
+test_code/test_images/*.png
 train_code/__pycache__/
 train_code/.ipynb_checkpoints/
 train_code/dataset/
@@ -14,7 +15,6 @@ train_code/notebooks/.ipynb_checkpoints/
 train_code/pretrain/images/
 train_code/pretrain/save_models/
 train_code/selective_search/__pycache__/
-train_c
 train_code/train_cartoon/images/
 train_code/train_cartoon/saved_models/
 train_code/train_cartoon/train_log/
