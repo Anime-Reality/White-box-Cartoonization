@@ -8,6 +8,22 @@ by Xinrui Wang and Jinze yu
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
+import wandb 
+wandb.init(project="anime-video-style-transfer", 
+            entity="thanit456", 
+            config={
+                "architecture": "whitebox-representation",
+                "photo_face": "celeb-mask-hq", 
+                "photo_scenery": "place365-val"
+                "cartoon_face" "ghibli15",
+                "cartoon_scenery": "ghibli15",
+                "patch_size": 256,
+                "batch_size": 16,
+                "total_iter": 100000,
+                "adv_train_lr": 2e-4,
+                "use_enhance": False
+            })
+
 import utils
 import os
 import numpy as np
@@ -27,7 +43,7 @@ def arg_parser():
     parser.add_argument("--batch_size", default = 16, type = int)     
     parser.add_argument("--total_iter", default = 100000, type = int)
     parser.add_argument("--adv_train_lr", default = 2e-4, type = float)
-    parser.add_argument("--gpu_fraction", default = 0.5, type = float)
+    parser.add_argument("--gpu_fraction", default = 0.7, type = float)
     parser.add_argument("--save_dir", default = 'train_cartoon', type = str)
     parser.add_argument("--use_enhance", default = False)
 
@@ -62,7 +78,7 @@ def train(args):
                                              scale=1, patch=True, name='disc_blur')
 
 
-    vgg_model = loss.Vgg19('vgg19_no_fc.npy')
+    vgg_model = loss.Vgg19('weights/vgg19_no_fc.npy')
     vgg_photo = vgg_model.build_conv4_4(input_photo)
     vgg_output = vgg_model.build_conv4_4(output)
     vgg_superpixel = vgg_model.build_conv4_4(input_superpixel)
@@ -118,7 +134,7 @@ def train(args):
     with tf.device('/device:GPU:0'):
 
         sess.run(tf.global_variables_initializer())
-        saver.restore(sess, tf.train.latest_checkpoint('pretrain/saved_models'))
+        saver.restore(sess, tf.train.latest_checkpoint('pretrain/save_models'))
 
         face_photo_dir = 'dataset/photo_face'
         face_photo_list = utils.load_image_list(face_photo_dir)
@@ -138,7 +154,7 @@ def train(args):
             else:
                 photo_batch = utils.next_batch(scenery_photo_list, args.batch_size)
                 cartoon_batch = utils.next_batch(scenery_cartoon_list, args.batch_size)
-        
+               
             inter_out = sess.run(output, feed_dict={input_photo: photo_batch, 
                                                     input_superpixel: photo_batch,
                                                     input_cartoon: cartoon_batch})
@@ -172,6 +188,8 @@ def train(args):
 
                 print('Iter: {}, d_loss: {}, g_loss: {}, recon_loss: {}'.\
                         format(total_iter, d_loss, g_loss, r_loss))
+                wandb.log({'d_loss': d_loss, 'g_loss': g_loss, 'r_loss': r_loss})
+            
                 if np.mod(total_iter+1, 500 ) == 0:
                     saver.save(sess, args.save_dir+'/saved_models/model', 
                                write_meta_graph=False, global_step=total_iter)
@@ -198,6 +216,7 @@ def train(args):
                                             str(total_iter)+'_scenery_result.jpg', 4)
                     utils.write_batch_image(photo_scenery, args.save_dir+'/images', 
                                             str(total_iter)+'_scenery_photo.jpg', 4)
+    wandb.finish() 
 
             
 if __name__ == '__main__':

@@ -1,3 +1,6 @@
+import sys 
+sys.path.append('./selective_search')
+
 from joblib import Parallel, delayed
 from skimage.segmentation import felzenszwalb
 from util import oversegmentation, switch_color_space, load_strategy

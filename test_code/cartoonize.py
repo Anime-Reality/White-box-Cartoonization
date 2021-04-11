@@ -6,7 +6,7 @@ import network
 import guided_filter
 from tqdm import tqdm
 
-
+import time 
 
 def resize_crop(image):
     h, w, c = np.shape(image)
@@ -21,7 +21,6 @@ def resize_crop(image):
     image = image[:h, :w, :]
     return image
     
-
 def cartoonize(load_folder, save_folder, model_path):
     input_photo = tf.placeholder(tf.float32, [1, None, None, 3])
     network_out = network.unet_generator(input_photo)
@@ -38,7 +37,10 @@ def cartoonize(load_folder, save_folder, model_path):
     sess.run(tf.global_variables_initializer())
     saver.restore(sess, tf.train.latest_checkpoint(model_path))
     name_list = os.listdir(load_folder)
+    
+    inference_times = [ ]
     for name in tqdm(name_list):
+        start_time = time.time()
         try:
             load_path = os.path.join(load_folder, name)
             save_path = os.path.join(save_folder, name)
@@ -52,8 +54,8 @@ def cartoonize(load_folder, save_folder, model_path):
             cv2.imwrite(save_path, output)
         except:
             print('cartoonize {} failed'.format(load_path))
-
-
+        inference_times.append(time.time() - start_time)
+    print(f"The average of inference time is {sum(inference_times) / len(inference_times)} seconds")
     
 
 if __name__ == '__main__':
