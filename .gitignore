@@ -4,8 +4,9 @@ backup/
 scrape_data/
 test_code/__pycache__/
 test_code/old_saved_models/
+test_code/old_test_images/
 test_code/cartoonized_images/
-test_code/saved_models/*
+# test_code/saved_models/
 test_code/test_images/*.jpg
 test_code/test_images/*.png
 train_code/__pycache__/
